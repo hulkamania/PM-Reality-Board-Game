@@ -16,6 +16,10 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,syst
 header{padding:22px 28px 10px;}
 h1{margin:0;font-size:26px;letter-spacing:-.5px}
 .sub{color:var(--muted);font-size:14px;margin-top:4px}
+.credit{font-size:12.5px;margin-top:6px;color:var(--muted)}
+.credit a{color:var(--blue);text-decoration:none;border-bottom:1px solid rgba(45,62,168,.32);
+  padding-bottom:1px;font-weight:600;transition:.15s}
+.credit a:hover{border-bottom-color:var(--blue);background:rgba(45,62,168,.07);border-radius:3px}
 .wrap{display:grid;grid-template-columns:1fr 340px;gap:20px;padding:8px 28px 40px;align-items:start}
 @media(max-width:1050px){.wrap{grid-template-columns:1fr}}
 
@@ -75,7 +79,8 @@ button:disabled{opacity:.42;cursor:not-allowed}
 <body>
 <header>
   <h1>How Product Management <em>Actually</em> Works</h1>
-  <div class="sub">Roll. Move. Draw a card. Try to reach <b>GA Launch</b> before the CEO gets into the thread. Board after Aakash Gupta's diagram.</div>
+  <div class="sub">Roll. Move. Draw a card. Try to reach <b>GA Launch</b> before the CEO gets into the thread.</div>
+  <div class="credit">Board adapted from <a href="https://www.linkedin.com/posts/aagupta_productmanagement-productmanager-aiproductmanagement-activity-7498420726933291008-jX97" target="_blank" rel="noopener noreferrer">&ldquo;How Product Management actually works&rdquo; by Aakash Gupta</a> &nbsp;&#8599;</div>
 </header>
 
 <div class="wrap">
