@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>How Product Management Actually Works — The Board Game</title>
+<style>
+:root{
+  --bg:#f4f5fb; --ink:#0f1633; --muted:#5b6488; --line:#3b4370;
+  --blue:#2d3ea8; --red:#e0483a; --amber:#f2a63b; --green:#22a06b;
+  --purple:#7b5cd6; --card:#ffffff; --shadow:0 8px 30px rgba(20,28,70,.13);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,system-ui,sans-serif;
+  background:var(--bg);color:var(--ink);}
+header{padding:22px 28px 10px;}
+h1{margin:0;font-size:26px;letter-spacing:-.5px}
+.sub{color:var(--muted);font-size:14px;margin-top:4px}
+.wrap{display:grid;grid-template-columns:1fr 340px;gap:20px;padding:8px 28px 40px;align-items:start}
+@media(max-width:1050px){.wrap{grid-template-columns:1fr}}
+​
+/* ---------- BOARD ---------- */
+.board{position:relative;background:#fff;border-radius:18px;box-shadow:var(--shadow);padding:16px;overflow:hidden}
+svg.links{position:absolute;inset:16px;width:calc(100% - 32px);height:calc(100% - 32px);pointer-events:none}
+.grid{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.space{position:relative;background:#fbfbff;border:2px solid #e3e6f4;border-radius:14px;padding:10px 10px 12px;
+  min-height:96px;display:flex;flex-direction:column;gap:6px;transition:.18s;z-index:2}
+.space .num{position:absolute;top:6px;right:9px;font-size:10px;color:#a4abcb;font-weight:700}
+.space .ic{font-size:19px;line-height:1}
+.space .lbl{font-size:12.5px;font-weight:650;line-height:1.25}
+.space.here{border-color:var(--blue);background:#eef1ff;box-shadow:0 0 0 4px rgba(45,62,168,.13)}
+.space.goal{border-color:var(--green);background:#eafaf2}
+.space.hazard{border-color:#f7d3ce}
+.space .pawns{display:flex;gap:4px;flex-wrap:wrap;margin-top:auto}
+.pawn{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;color:#fff;
+  font-size:10px;font-weight:800;box-shadow:0 2px 5px rgba(0,0,0,.22)}
+.deckdot{position:absolute;bottom:8px;right:9px;font-size:10px;color:#c3491f;font-weight:700}
+​
+/* ---------- PANEL ---------- */
+.panel{display:flex;flex-direction:column;gap:14px;position:sticky;top:14px}
+.box{background:#fff;border-radius:16px;box-shadow:var(--shadow);padding:16px}
+.box h2{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.9px;color:var(--muted)}
+.players{display:flex;flex-direction:column;gap:8px}
+.prow{display:flex;align-items:center;gap:9px;font-size:13px;padding:7px 9px;border-radius:10px;background:#f7f8fd}
+.prow.active{background:#eef1ff;outline:2px solid var(--blue)}
+.prow .nm{font-weight:650;flex:1}
+.prow .st{font-size:11px;color:var(--muted)}
+button{font:inherit;border:0;border-radius:11px;padding:11px 14px;font-weight:700;cursor:pointer;transition:.15s}
+button:disabled{opacity:.42;cursor:not-allowed}
+.primary{background:var(--blue);color:#fff;width:100%;font-size:15px}
+.primary:hover:not(:disabled){background:#22307f}
+.ghost{background:#eceefa;color:var(--blue)}
+.die{font-size:46px;text-align:center;line-height:1;margin:2px 0 10px}
+.log{max-height:230px;overflow:auto;font-size:12.5px;line-height:1.5;color:#333a5c}
+.log div{padding:5px 0;border-bottom:1px solid #f0f1f8}
+.log b{color:var(--blue)}
+​
+/* ---------- CARD MODAL ---------- */
+.scrim{position:fixed;inset:0;background:rgba(12,16,40,.55);display:grid;place-items:center;z-index:50;
+  opacity:0;pointer-events:none;transition:.2s}
+.scrim.on{opacity:1;pointer-events:auto}
+.cardface{width:340px;background:var(--card);border-radius:20px;padding:24px;box-shadow:0 24px 70px rgba(0,0,0,.4);
+  transform:translateY(14px) scale(.96);transition:.25s cubic-bezier(.2,.9,.3,1.3);text-align:center}
+.scrim.on .cardface{transform:none}
+.cardface .kind{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;font-weight:800;color:var(--muted)}
+.cardface .big{font-size:40px;margin:10px 0 6px}
+.cardface .ttl{font-size:19px;font-weight:800;line-height:1.25;margin-bottom:8px}
+.cardface .txt{font-size:13.5px;color:#4b5375;line-height:1.5;margin-bottom:16px}
+.cardface .eff{font-size:12px;font-weight:750;padding:8px 10px;border-radius:10px;background:#f2f4ff;color:var(--blue);margin-bottom:16px}
+.cardface.win{outline:3px solid var(--green)}
+.cardface.win .eff{background:#e6f8ef;color:#12724c}
+.tag{display:inline-block;font-size:10px;padding:2px 7px;border-radius:20px;background:#eceefa;color:var(--muted);font-weight:700}
+</style>
+</head>
+<body>
+<header>
+  <h1>How Product Management <em>Actually</em> Works</h1>
+  <div class="sub">Roll. Move. Draw a card. Try to reach <b>GA Launch</b> before the CEO gets into the thread. Board after Aakash Gupta's diagram.</div>
+</header>
+​
+<div class="wrap">
+  <div class="board"><svg class="links"></svg><div class="grid" id="grid"></div></div>
+​
+  <div class="panel">
+    <div class="box">
+      <div class="die" id="die">🎲</div>
+      <button class="primary" id="roll">Roll the dice</button>
+      <div style="margin-top:9px;display:flex;gap:8px">
+        <button class="ghost" id="reset" style="flex:1">Reset</button>
+        <button class="ghost" id="addp" style="flex:1">Players: 2</button>
+      </div>
+    </div>
+    <div class="box"><h2>Players</h2><div class="players" id="players"></div></div>
+    <div class="box"><h2>Standup log</h2><div class="log" id="log"></div></div>
+  </div>
+</div>
+​
+<div class="scrim" id="scrim"><div class="cardface" id="cardface"></div></div>
+​
+<script>
+/* ============ BOARD ============ */
+const BOARD = [
+ {n:"Talk to users",i:"💬"},
+ {n:"Three users want three different things",i:"👥"},
+ {n:"Talk to sales",i:"📞"},
+ {n:"Sales wants the fourth thing",i:"🕐"},
+ {n:"Write the PRD",i:"📄"},
+ {n:"Engineer says the data model cannot do that",i:"⚠️",hazard:1},
+ {n:"Rewrite the PRD",i:"📝"},
+ {n:"Estimate comes back 3x",i:"⏱️",hazard:1},
+ {n:"Cut scope",i:"✂️"},
+ {n:"Ship half",i:"⬡"},
+ {n:"Stakeholder escalates the cut",i:"🔔",hazard:1},
+ {n:"Re-litigate the cut",i:"🔄",hazard:1},
+ {n:"Instrument it",i:"🕒"},
+ {n:"Data is ambiguous",i:"❓",hazard:1},
+ {n:"Argue about metric definition",i:"💬",hazard:1},
+ {n:"Fix the metric definition",i:"🔧"},
+ {n:"Data is still ambiguous",i:"⊖",hazard:1},
+ {n:"Ship the other half",i:"🚀"},
+ {n:"Adoption is fine, retention is not",i:"📉",hazard:1},
+ {n:"Go back to the three users",i:"👤"},
+ {n:"Learn the real problem was the fourth on the list",i:"⭐"},
+ {n:"Start again",i:"⟳"},
+];
+const GOAL_INDEX = 17; // "Ship the other half" — the only space that can draw the GA card
+​
+/* ============ CARD DECKS ============
+   effect: {type:'wait'|'move'|'back'|'none'|'win', to?:index, n?:steps} */
+const GENERIC = [
+ {t:"Slack thread, 41 replies",x:"Nobody has made a decision but everyone has an opinion.",e:{type:'wait'},k:"Alignment"},
+ {t:"Nobody checked the schema",x:"The data model cannot do that. Again.",e:{type:'back',n:3},k:"Engineering"},
+ {t:"Reorg",x:"Your stakeholder now reports somewhere else. Start the socialising over.",e:{type:'back',n:4},k:"Org"},
+ {t:"A quiet week",x:"No escalations. No fire drills. Suspicious, but you'll take it.",e:{type:'move',n:2},k:"Miracle"},
+ {t:"Design review lands well",x:"Someone senior said 'this is clear'. Momentum.",e:{type:'move',n:2},k:"Momentum"},
+ {t:"Two weeks, no code",x:"All discovery, all alignment, zero shipped.",e:{type:'wait'},k:"Calendar"},
+ {t:"'Can you just add a toggle?'",x:"It is never just a toggle.",e:{type:'back',n:2},k:"Scope"},
+ {t:"Customer is waiting",x:"Sales escalates. You context-switch.",e:{type:'back',n:2},k:"Sales"},
+ {t:"Your eng lead is on PTO",x:"Nothing moves for a sprint.",e:{type:'wait'},k:"Capacity"},
+ {t:"You wrote a good one-pager",x:"It actually got read. Skip ahead.",e:{type:'move',n:3},k:"Craft"},
+ {t:"Legal has questions",x:"Seven of them. In a doc. With comments.",e:{type:'wait'},k:"Compliance"},
+ {t:"Not the real problem",x:"You solved the thing they said, not the thing they meant.",e:{type:'back',n:5},k:"Discovery"},
+];
+​
+/* Space-specific decks. "Ship the other half" holds the GA Launch card AND the CEO card. */
+const DECKS = {
+ 17:[
+  {t:"GA Launch 🎉",x:"Metrics hold. Retention curve flattens in the good way. Comms goes out. You actually shipped the whole thing.",e:{type:'win'},k:"Victory",win:1},
+  {t:"CEO in the thread",x:"One message, no context, a question mark. Everything stops until it is answered.",e:{type:'move',to:4},k:"Escalation"},
+  {t:"They logged in once",x:"Activation looks great. Retention does not.",e:{type:'move',to:18},k:"Reality"},
+  {t:"Soft launch to 5%",x:"Nothing breaks. Ramp continues next week.",e:{type:'move',n:1},k:"Rollout"},
+  {t:"Rollback",x:"A p95 regression nobody caught in staging.",e:{type:'back',n:3},k:"Incident"},
+  {t:"'Is this GA or beta?'",x:"Nobody agrees. Definition debate consumes the week.",e:{type:'wait'},k:"Semantics"},
+ ],
+ 0:[
+  {t:"All three are right",x:"Three users, three mutually exclusive truths.",e:{type:'move',n:1},k:"Discovery"},
+  {t:"The loudest user wins",x:"You build for them. It is not the real problem.",e:{type:'move',n:1},k:"Discovery"},
+  {t:"A genuinely good interview",x:"You found the pattern early.",e:{type:'move',n:3},k:"Craft"},
+ ],
+ 9:[
+  {t:'We called it an "MVP"',x:"Which nobody read as 'minimum'.",e:{type:'move',to:10},k:"Scope"},
+  {t:"Half is enough",x:"It solves the actual job. Ship it and move.",e:{type:'move',n:3},k:"Momentum"},
+  {t:"Stakeholder escalates the cut",x:"The cut you agreed to, in writing, last month.",e:{type:'move',to:10},k:"Escalation"},
+ ],
+ 13:[
+  {t:"Argue about metric definition",x:"Is a 'session' 30 minutes or 30 seconds?",e:{type:'move',to:14},k:"Analytics"},
+  {t:"The dashboard was wrong",x:"Timezone bug. All of Q3 restated.",e:{type:'back',n:3},k:"Analytics"},
+  {t:"Actually, the data is fine",x:"You just needed to segment it.",e:{type:'move',n:3},k:"Craft"},
+ ],
+ 21:[
+  {t:"Start again",x:"New quarter, new priorities, same three users.",e:{type:'back',n:8},k:"Cycle"},
+ {t:"Escape velocity",x:"The loop finally breaks. You get another swing at shipping.",e:{type:'move',to:17},k:"Momentum"},
+  {t:"This is the actual job",x:"Navigating ambiguity is not a detour. Carry on.",e:{type:'move',to:16},k:"Wisdom"},
+ ],
+ 20:[
+  {t:"The fourth thing was the product",x:"You finally scoped the right problem. Back to shipping it.",e:{type:'move',to:17},k:"Clarity"},
+  {t:"Reprioritise the roadmap",x:"Everything below the fold gets cut. The real one moves up.",e:{type:'move',to:17},k:"Clarity"},
+  {t:"Nobody wants to hear it",x:"You were right six months ago. That is not a comfort.",e:{type:'wait'},k:"Org"},
+ ],
+ 18:[
+  {t:"Retention fix lands",x:"One onboarding change moves the curve. Back to the other half.",e:{type:'move',to:17},k:"Craft"},
+  {t:"Churn review",x:"Three hours, four theories, no decision.",e:{type:'wait'},k:"Alignment"},
+  {t:"Blame the metric",x:"Easier than fixing the product.",e:{type:'move',to:15},k:"Analytics"},
+ ],
+};
+​
+/* ============ STATE ============ */
+let players=[], turn=0, rolling=false, over=false, nPlayers=2;
+const COLORS=["#2d3ea8","#e0483a","#22a06b","#f2a63b"];
+const NAMES=["APM","PM","Senior PM","Group PM"];
+​
+function init(){
+  players=Array.from({length:nPlayers},(_,i)=>({id:i,name:NAMES[i],pos:0,skip:0,color:COLORS[i]}));
+  turn=0;over=false;document.getElementById('log').innerHTML='';
+  document.getElementById('die').textContent='🎲';
+  log("Kickoff. Everyone starts at <b>Talk to users</b>. Goal: draw the GA Launch card at <b>Ship the other half</b>.");
+  render();
+}
+function log(h){const l=document.getElementById('log');const d=document.createElement('div');d.innerHTML=h;l.prepend(d);}
+​
+function render(){
+  const g=document.getElementById('grid'); g.innerHTML='';
+  BOARD.forEach((s,i)=>{
+    const el=document.createElement('div');
+    el.className='space'+(s.hazard?' hazard':'')+(i===GOAL_INDEX?' goal':'')
+      +(players.some(p=>p.pos===i&&p.id===turn)?' here':'');
+    el.innerHTML=`<span class="num">${i+1}</span><span class="ic">${s.i}</span>
+      <span class="lbl">${s.n}</span>
+      ${DECKS[i]?'<span class="deckdot">◆ deck</span>':''}
+      <div class="pawns">${players.filter(p=>p.pos===i).map(p=>
+        `<span class="pawn" style="background:${p.color}" title="${p.name}">${p.name[0]}</span>`).join('')}</div>`;
+    g.appendChild(el);
+  });
+  const pv=document.getElementById('players'); pv.innerHTML='';
+  players.forEach(p=>{
+    const r=document.createElement('div');
+    r.className='prow'+(p.id===turn&&!over?' active':'');
+    r.innerHTML=`<span class="pawn" style="background:${p.color}">${p.name[0]}</span>
+      <span class="nm">${p.name}</span>
+      <span class="st">${p.skip?'⏸ waiting a turn':'#'+(p.pos+1)}</span>`;
+    pv.appendChild(r);
+  });
+  document.getElementById('addp').textContent='Players: '+nPlayers;
+  document.getElementById('roll').disabled=rolling||over;
+}
+​
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+​
+async function roll(){
+  if(rolling||over) return; rolling=true; render();
+  const p=players[turn];
+  if(p.skip){ p.skip--; log(`<b>${p.name}</b> is blocked and loses the turn.`); rolling=false; next(); return; }
+​
+  const die=document.getElementById('die');
+  for(let k=0;k<9;k++){ die.textContent='⚀⚁⚂⚃⚄⚅'[Math.floor(Math.random()*6)]; await sleep(55); }
+  const v=1+Math.floor(Math.random()*6);
+  die.textContent='⚀⚁⚂⚃⚄⚅'[v-1];
+​
+  p.pos=Math.min(BOARD.length-1,p.pos+v);
+  log(`<b>${p.name}</b> rolls ${v} → <b>${BOARD[p.pos].n}</b>`);
+  render(); await sleep(420);
+​
+  const deck=DECKS[p.pos]||GENERIC;
+  await drawCard(p,deck);
+  rolling=false; if(!over) next();
+}
+​
+function drawCard(p,deck){
+  return new Promise(res=>{
+    const c=deck[Math.floor(Math.random()*deck.length)];
+    const scrim=document.getElementById('scrim'), face=document.getElementById('cardface');
+    face.className='cardface'+(c.win?' win':'');
+    face.innerHTML=`<div class="kind">${BOARD[p.pos].n}</div>
+      <div class="big">${c.win?'🏆':BOARD[p.pos].i}</div>
+      <div class="ttl">${c.t}</div>
+      <div class="txt">${c.x}</div>
+      <div class="eff">${describe(c.e)}</div>
+      <span class="tag">${c.k}</span><br><br>
+      <button class="primary" id="ok">${c.win?'Ship it':'Accept reality'}</button>`;
+    scrim.classList.add('on');
+    document.getElementById('ok').onclick=()=>{
+      scrim.classList.remove('on');
+      apply(p,c); render(); res();
+    };
+  });
+}
+​
+function describe(e){
+  switch(e.type){
+    case 'wait': return '⏸ Lose your next turn.';
+    case 'move': return e.to!=null?`➜ Move to “${BOARD[e.to].n}”.`:`➜ Advance ${e.n} space${e.n>1?'s':''}.`;
+    case 'back': return `↩ Go back ${e.n} space${e.n>1?'s':''}.`;
+    case 'win':  return '🏆 GA LAUNCH — you win the game.';
+    default:     return 'No effect. Carry on.';
+  }
+}
+​
+function apply(p,c){
+  const e=c.e;
+  if(e.type==='wait'){ p.skip=1; log(`↳ <b>${p.name}</b> loses next turn — ${c.t}.`); }
+  else if(e.type==='move'){
+    p.pos = e.to!=null ? e.to : Math.min(BOARD.length-1,p.pos+e.n);
+    log(`↳ <b>${p.name}</b> → ${BOARD[p.pos].n} (${c.t}).`);
+  }
+  else if(e.type==='back'){ p.pos=Math.max(0,p.pos-e.n); log(`↳ <b>${p.name}</b> back to ${BOARD[p.pos].n}.`); }
+  else if(e.type==='win'){ over=true; log(`🏆 <b>${p.name} reaches GA Launch and wins.</b>`); setTimeout(()=>alert(`${p.name} hits GA Launch. Ship it. 🏆`),260); }
+}
+​
+function next(){ if(over){render();return;} do{ turn=(turn+1)%players.length; }while(false); render(); }
+​
+document.getElementById('roll').onclick=roll;
+document.getElementById('reset').onclick=init;
+document.getElementById('addp').onclick=()=>{ nPlayers=nPlayers%4+1; init(); };
+init();
+</script>
+</body>
+</html>
