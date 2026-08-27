@@ -18,7 +18,7 @@ h1{margin:0;font-size:26px;letter-spacing:-.5px}
 .sub{color:var(--muted);font-size:14px;margin-top:4px}
 .wrap{display:grid;grid-template-columns:1fr 340px;gap:20px;padding:8px 28px 40px;align-items:start}
 @media(max-width:1050px){.wrap{grid-template-columns:1fr}}
-​
+
 /* ---------- BOARD ---------- */
 .board{position:relative;background:#fff;border-radius:18px;box-shadow:var(--shadow);padding:16px;overflow:hidden}
 svg.links{position:absolute;inset:16px;width:calc(100% - 32px);height:calc(100% - 32px);pointer-events:none}
@@ -35,7 +35,7 @@ svg.links{position:absolute;inset:16px;width:calc(100% - 32px);height:calc(100% 
 .pawn{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;color:#fff;
   font-size:10px;font-weight:800;box-shadow:0 2px 5px rgba(0,0,0,.22)}
 .deckdot{position:absolute;bottom:8px;right:9px;font-size:10px;color:#c3491f;font-weight:700}
-​
+
 /* ---------- PANEL ---------- */
 .panel{display:flex;flex-direction:column;gap:14px;position:sticky;top:14px}
 .box{background:#fff;border-radius:16px;box-shadow:var(--shadow);padding:16px}
@@ -54,7 +54,7 @@ button:disabled{opacity:.42;cursor:not-allowed}
 .log{max-height:230px;overflow:auto;font-size:12.5px;line-height:1.5;color:#333a5c}
 .log div{padding:5px 0;border-bottom:1px solid #f0f1f8}
 .log b{color:var(--blue)}
-​
+
 /* ---------- CARD MODAL ---------- */
 .scrim{position:fixed;inset:0;background:rgba(12,16,40,.55);display:grid;place-items:center;z-index:50;
   opacity:0;pointer-events:none;transition:.2s}
@@ -77,10 +77,10 @@ button:disabled{opacity:.42;cursor:not-allowed}
   <h1>How Product Management <em>Actually</em> Works</h1>
   <div class="sub">Roll. Move. Draw a card. Try to reach <b>GA Launch</b> before the CEO gets into the thread. Board after Aakash Gupta's diagram.</div>
 </header>
-​
+
 <div class="wrap">
   <div class="board"><svg class="links"></svg><div class="grid" id="grid"></div></div>
-​
+
   <div class="panel">
     <div class="box">
       <div class="die" id="die">🎲</div>
@@ -94,9 +94,9 @@ button:disabled{opacity:.42;cursor:not-allowed}
     <div class="box"><h2>Standup log</h2><div class="log" id="log"></div></div>
   </div>
 </div>
-​
+
 <div class="scrim" id="scrim"><div class="cardface" id="cardface"></div></div>
-​
+
 <script>
 /* ============ BOARD ============ */
 const BOARD = [
@@ -124,7 +124,7 @@ const BOARD = [
  {n:"Start again",i:"⟳"},
 ];
 const GOAL_INDEX = 17; // "Ship the other half" — the only space that can draw the GA card
-​
+
 /* ============ CARD DECKS ============
    effect: {type:'wait'|'move'|'back'|'none'|'win', to?:index, n?:steps} */
 const GENERIC = [
@@ -141,7 +141,7 @@ const GENERIC = [
  {t:"Legal has questions",x:"Seven of them. In a doc. With comments.",e:{type:'wait'},k:"Compliance"},
  {t:"Not the real problem",x:"You solved the thing they said, not the thing they meant.",e:{type:'back',n:5},k:"Discovery"},
 ];
-​
+
 /* Space-specific decks. "Ship the other half" holds the GA Launch card AND the CEO card. */
 const DECKS = {
  17:[
@@ -183,12 +183,12 @@ const DECKS = {
   {t:"Blame the metric",x:"Easier than fixing the product.",e:{type:'move',to:15},k:"Analytics"},
  ],
 };
-​
+
 /* ============ STATE ============ */
 let players=[], turn=0, rolling=false, over=false, nPlayers=2;
 const COLORS=["#2d3ea8","#e0483a","#22a06b","#f2a63b"];
 const NAMES=["APM","PM","Senior PM","Group PM"];
-​
+
 function init(){
   players=Array.from({length:nPlayers},(_,i)=>({id:i,name:NAMES[i],pos:0,skip:0,color:COLORS[i]}));
   turn=0;over=false;document.getElementById('log').innerHTML='';
@@ -197,7 +197,7 @@ function init(){
   render();
 }
 function log(h){const l=document.getElementById('log');const d=document.createElement('div');d.innerHTML=h;l.prepend(d);}
-​
+
 function render(){
   const g=document.getElementById('grid'); g.innerHTML='';
   BOARD.forEach((s,i)=>{
@@ -223,28 +223,28 @@ function render(){
   document.getElementById('addp').textContent='Players: '+nPlayers;
   document.getElementById('roll').disabled=rolling||over;
 }
-​
+
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-​
+
 async function roll(){
   if(rolling||over) return; rolling=true; render();
   const p=players[turn];
   if(p.skip){ p.skip--; log(`<b>${p.name}</b> is blocked and loses the turn.`); rolling=false; next(); return; }
-​
+
   const die=document.getElementById('die');
   for(let k=0;k<9;k++){ die.textContent='⚀⚁⚂⚃⚄⚅'[Math.floor(Math.random()*6)]; await sleep(55); }
   const v=1+Math.floor(Math.random()*6);
   die.textContent='⚀⚁⚂⚃⚄⚅'[v-1];
-​
+
   p.pos=Math.min(BOARD.length-1,p.pos+v);
   log(`<b>${p.name}</b> rolls ${v} → <b>${BOARD[p.pos].n}</b>`);
   render(); await sleep(420);
-​
+
   const deck=DECKS[p.pos]||GENERIC;
   await drawCard(p,deck);
   rolling=false; if(!over) next();
 }
-​
+
 function drawCard(p,deck){
   return new Promise(res=>{
     const c=deck[Math.floor(Math.random()*deck.length)];
@@ -264,7 +264,7 @@ function drawCard(p,deck){
     };
   });
 }
-​
+
 function describe(e){
   switch(e.type){
     case 'wait': return '⏸ Lose your next turn.';
@@ -274,7 +274,7 @@ function describe(e){
     default:     return 'No effect. Carry on.';
   }
 }
-​
+
 function apply(p,c){
   const e=c.e;
   if(e.type==='wait'){ p.skip=1; log(`↳ <b>${p.name}</b> loses next turn — ${c.t}.`); }
@@ -285,9 +285,9 @@ function apply(p,c){
   else if(e.type==='back'){ p.pos=Math.max(0,p.pos-e.n); log(`↳ <b>${p.name}</b> back to ${BOARD[p.pos].n}.`); }
   else if(e.type==='win'){ over=true; log(`🏆 <b>${p.name} reaches GA Launch and wins.</b>`); setTimeout(()=>alert(`${p.name} hits GA Launch. Ship it. 🏆`),260); }
 }
-​
+
 function next(){ if(over){render();return;} do{ turn=(turn+1)%players.length; }while(false); render(); }
-​
+
 document.getElementById('roll').onclick=roll;
 document.getElementById('reset').onclick=init;
 document.getElementById('addp').onclick=()=>{ nPlayers=nPlayers%4+1; init(); };
